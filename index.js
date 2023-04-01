@@ -3,6 +3,19 @@ const listElement = document.getElementById('list');
 const inputNameElement = document.getElementById('name-input');
 const inputTextElement = document.getElementById('text-input');
 let comments = [];
+const host = 'https://webdev-hw-api.vercel.app/api/v1/yuliya-martoshenko/comments'
+
+const getDate = (date) => {
+    const options = {
+        year: '2-digit',
+        month: 'numeric',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    }
+    const newDate = new Date(date);
+    return newDate.toLocaleString('ru-RU', options).replace(',', '');
+};
 
 //рендер данных
 const renderComments = () => {
@@ -10,14 +23,18 @@ const renderComments = () => {
         return `<li class="comment">
         <div class="comment-header">
           <div>${comment.name}</div>
-          <div>${comment.date}</div>
+          <div>${getDate(comment.date)}</div>
         </div>
         <div class="comment-body">
           <div class="comment-text">
             ${comment.text}
           </div>
         </div>
+        <div>
+            <button data-index=${index} class="delete-button" id="delete-button">Удалить</button>
+        </div>
         <div class="comment-footer">
+
           <div class="likes">
             <span class="likes-counter">${comment.likes}</span>
             <button data-index=${index} class=${comment.isLiked ? "'like-button -active-like'" : "'like-button'"}></button>
@@ -26,11 +43,13 @@ const renderComments = () => {
   `
     }).join('');
     listElement.innerHTML = commentsHtml;
+    initButtonLikeListeners();
+    initDeleteButtonListeners();
 }
 
 //Запрос данных из API
 const getAPI = () => {
-    fetch('https://webdev-hw-api.vercel.app/api/v1/yuliya-martoshenko/comments', {
+    fetch(host, {
         method: 'GET',
     })
         .then((response) => {
@@ -51,7 +70,6 @@ const getAPI = () => {
                 }
             });
             renderComments();
-            initButtonLikeListeners();
         })
 }
 
@@ -64,7 +82,6 @@ const initButtonLikeListeners = () => {
             comments[index].isLiked ? comments[index].likes-- : comments[index].likes++;
             comments[index].isLiked = !comments[index].isLiked;
             renderComments();
-            initButtonLikeListeners();
         })
     }
 }
@@ -82,6 +99,30 @@ const buttonDisable = () => {
 getAPI();
 buttonDisable();
 
+//Обработка события при нажатии на кнопку "Удалить"
+const initDeleteButtonListeners = () => {
+    const deleteButtonElements = document.querySelectorAll('.delete-button');
+    for (const deleteButtonElement of deleteButtonElements) {
+        deleteButtonElement.addEventListener('click', () => {
+            const id = deleteButtonElement.dataset.index;
+            console.log(id);
+            //Обращение к API для удаления
+            // fetch(host + '/' + id, {
+            //     method: "DELETE"
+            // })
+            // .then((response) => {
+            //     return response.json()
+            // .then((responseData) => {
+            //         // получили данные и рендерим их в приложении
+            //         comments = responseData.comments;
+            //         renderComments();
+            //     });
+            // });
+
+        })
+    }
+
+}
 
 
 //Обработка события при нажатии на кнопку Enter - добавление комментария
@@ -95,7 +136,7 @@ document.addEventListener('keyup', (e) => {
 buttonElement.addEventListener('click', () => {
     //buttonElement.disabled = true;
     //Отправка данных в API
-    fetch("https://webdev-hw-api.vercel.app/api/v1/yuliya-martoshenko/comments", {
+    fetch(host, {
         method: "POST",
         body: JSON.stringify({
             name: inputNameElement.value,
@@ -107,13 +148,14 @@ buttonElement.addEventListener('click', () => {
         })
         .then((responseData) => {
             // получили данные и рендерим их в приложении
-            tasks = responseData.comments;
+            comments = responseData.comments;
             buttonElement.disabled = false;
             getAPI();
         });
 
     renderComments();
     initButtonLikeListeners();
+    initDeleteButtonListeners();
 
 
     //очистка форм ввода
