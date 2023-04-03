@@ -1,6 +1,7 @@
 
 let comments = [];
-const host = 'https://webdev-hw-api.vercel.app/api/v1/yuliya-martoshenko/comments'
+const host = 'https://webdev-hw-api.vercel.app/api/v1/yuliya-martoshenko/comments';
+let token = 'Bearer asb4c4boc86gasb4c4boc86g37w3cc3bo3b83k37k3bk3cg3c03ck';
 
 const getDate = (date) => {
     const options = {
@@ -30,7 +31,7 @@ const renderApp = () => {
           </div>
         </div>
         <div>
-            <button data-index=${index} class="delete-button" id="delete-button">Удалить</button>
+            <button data-id="${comment.id}" class="delete-button" id="delete-button">Удалить</button>
         </div>
         <div class="comment-footer">
 
@@ -88,7 +89,10 @@ const renderApp = () => {
             body: JSON.stringify({
                 name: inputNameElement.value,
                 text: inputTextElement.value,
-            })
+            }),
+            headers: {
+                Authorization: token,
+              },
         })
             .then((response) => {
                 return response.json()
@@ -128,32 +132,41 @@ const renderApp = () => {
         const deleteButtonElements = document.querySelectorAll('.delete-button');
         for (const deleteButtonElement of deleteButtonElements) {
             deleteButtonElement.addEventListener('click', () => {
-                const id = deleteButtonElement.dataset.index;
+                const id = deleteButtonElement.dataset.id;
                 console.log(id);
+                console.log(host + '/' + id);
+
                 //Обращение к API для удаления
-                // fetch(host + '/' + id, {
-                //     method: "DELETE"
-                // })
-                // .then((response) => {
-                //     return response.json()
-                // .then((responseData) => {
-                //         // получили данные и рендерим их в приложении
-                //         comments = responseData.comments;
-                //         renderComments();
-                //     });
-                // });
+                fetch(host + '/' + id, {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: token,
+                    },
+                })
+                .then((response) => {
+                    return response.json()
+                .then((responseData) => {
+                        // получили данные и рендерим их в приложении
+                        comments = responseData.comments;
+                        renderComments();
+                    });
+                });
 
             })
         }
     }
     initButtonLikeListeners();
-    initDeleteButtonListeners()
+    initDeleteButtonListeners();
+    buttonDisable();
 }
 
 //Запрос данных из API
 const getAPI = () => {
     fetch(host, {
         method: 'GET',
+        headers: {
+            Authorization: token,
+          },
     })
         .then((response) => {
             return response;
